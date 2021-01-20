@@ -13,7 +13,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-/**
+import org.firstinspires.ftc.teamcode.util.TimedAction;
+
+        /**
  * This sample shows how to use dead wheels with external encoders
  * paired with motors that don't require encoders.
  * In this sample, we will use the drive motors' encoder
@@ -47,6 +49,7 @@ public class MainTeleOp extends LinearOpMode {
 
     private Motor frontLeft, frontRight, backLeft, backRight, shooter, intake;
     private SimpleServo kicker;
+    private TimedAction flicker;
     private RevIMU imu;
     GamepadEx gPad;
     private MecanumDrive driveTrain;
@@ -64,8 +67,14 @@ public class MainTeleOp extends LinearOpMode {
 
         intake = new Motor(hardwareMap, "intake");
         shooter = new Motor(hardwareMap, "shooter");
-        kicker = new SimpleServo(hardwareMap, "kicker", 0.2, 1) {
+        kicker = new SimpleServo(hardwareMap, "kicker", 0, 270) {
         };
+        flicker = new TimedAction(
+                () -> kicker.turnToAngle(80),
+                () -> kicker.turnToAngle(35),
+                100,    // 500 ms between flick positions
+                true
+        );
 
         driveTrain = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
         imu = new RevIMU(hardwareMap);
@@ -159,13 +168,10 @@ public class MainTeleOp extends LinearOpMode {
                 shooter.set(0);
             }
 
-            if(gamepad1.right_trigger >= 0.75){
-                kicker.setPosition(1.0);
-                Thread.sleep(200);
-                kicker.setPosition(0.67);
-            } else if (gamepad1.left_trigger >= 0.75){
-                kicker.setPosition(0.2);
+            if(gamepad1.right_trigger >= 0.35 && !flicker.running()){
+                flicker.reset();
             }
+            flicker.run();
 
             if(buttonReaderX.getState()){
                 intake.set(1);
@@ -185,5 +191,4 @@ public class MainTeleOp extends LinearOpMode {
             //odometry.update();
         }
     }
-
 }
