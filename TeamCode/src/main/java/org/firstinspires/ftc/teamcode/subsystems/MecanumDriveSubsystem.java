@@ -18,7 +18,7 @@ import java.util.List;
  * This periodically calls {@link SampleMecanumDrive#update()} which runs the internal
  * state machine for the mecanum drive. All movement/following is async to fit the paradigm.
  */
-public class MecanumDriveSubsystem extends SubsystemBase {
+public class  MecanumDriveSubsystem extends SubsystemBase {
 
     private final SampleMecanumDrive drive;
     private final boolean fieldCentric;

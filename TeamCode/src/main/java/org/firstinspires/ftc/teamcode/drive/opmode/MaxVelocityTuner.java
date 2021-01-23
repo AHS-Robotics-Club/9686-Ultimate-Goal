@@ -30,7 +30,7 @@ import java.util.Objects;
 @Autonomous(group = "drive")
 public class MaxVelocityTuner extends CommandOpMode {
 
-    public static double RUNTIME = 2.0;
+    public static double RUNTIME = 1.5;
 
     private ElapsedTime timer = new ElapsedTime();
     private double maxVelocity = 0.0;

@@ -10,7 +10,7 @@ import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.arcrobotics.ftclib.purepursuit.waypoints.EndWaypoint;
 import com.arcrobotics.ftclib.purepursuit.waypoints.GeneralWaypoint;
 import com.arcrobotics.ftclib.purepursuit.waypoints.StartWaypoint;
-import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
+//import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,9 +18,9 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Supplier;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
+//import org.openftc.easyopencv.OpenCvCamera;
+//import org.openftc.easyopencv.OpenCvCameraFactory;
+//import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Disabled
 @Autonomous(name = "Experimental Auton")
@@ -44,13 +44,13 @@ public class ExperimentalAutonomous extends com.qualcomm.robotcore.eventloop.opm
     public static final double TICKS_PER_REV = 8192;
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
-    private UGContourRingPipeline pipeline;
+//    private UGContourRingPipeline pipeline;
     private VoltageSensor voltageSensor = hardwareMap.voltageSensor.iterator().next();
-    private OpenCvCamera camera;
+//    private OpenCvCamera camera;
 
-    private int cameraMonitorViewId;
-    private PurePursuitCommand zoom;
-    private Supplier<UGContourRingPipeline.Height> height;
+//    private int cameraMonitorViewId;
+//    private PurePursuitCommand zoom;
+//    private Supplier<UGContourRingPipeline.Height> height;
 
     private Motor frontLeft, frontRight, backLeft, backRight, shooter;
     private RevIMU imu;
@@ -98,7 +98,7 @@ public class ExperimentalAutonomous extends com.qualcomm.robotcore.eventloop.opm
                 centerOdometer::getDistance,
                 TRACKWIDTH, CENTER_WHEEL_OFFSET
         ));
-
+/*
         zoom = new PurePursuitCommand(driveTrain, odometry,
                 new StartWaypoint(0, 0),
                 new GeneralWaypoint(3, 28, Math.PI, 0.5, 0.3, 0.5),
@@ -124,12 +124,12 @@ public class ExperimentalAutonomous extends com.qualcomm.robotcore.eventloop.opm
                 .createWebcam(hardwareMap.get(WebcamName.class, "Jesus"), cameraMonitorViewId);
         camera.setPipeline(pipeline = new UGContourRingPipeline(telemetry, true));
         camera.openCameraDeviceAsync(() -> camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT));
-
+*/
     }
 
     @Override
     public void loop() {
-        zoom.execute();
+//        zoom.execute();
 
         telemetry.addData("x", odometry.getPose().getX());
         telemetry.addData("y", odometry.getPose().getY());
@@ -137,7 +137,7 @@ public class ExperimentalAutonomous extends com.qualcomm.robotcore.eventloop.opm
     }
 
     public void autoAction() {
-
+/*
         if (height.get() == UGContourRingPipeline.Height.ZERO) {
             // TEST CASE
         } else if (height.get() == UGContourRingPipeline.Height.ONE) {
@@ -149,5 +149,8 @@ public class ExperimentalAutonomous extends com.qualcomm.robotcore.eventloop.opm
 
         // interrupts are for powershots
         //end if for park}
+    }
+
+ */
     }
 }

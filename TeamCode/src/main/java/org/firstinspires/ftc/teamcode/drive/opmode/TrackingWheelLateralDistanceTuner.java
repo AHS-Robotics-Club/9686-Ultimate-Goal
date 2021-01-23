@@ -3,20 +3,12 @@ package org.firstinspires.ftc.teamcode.drive.opmode;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
-import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
-import com.arcrobotics.ftclib.command.WaitUntilCommand;
-import com.arcrobotics.ftclib.command.button.Button;
-import com.arcrobotics.ftclib.command.button.GamepadButton;
-import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.teamcode.commands.RunCommand;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
-import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 
 /**
  * Opmode designed to assist the user in tuning the `StandardTrackingWheelLocalizer`'s
@@ -68,24 +60,15 @@ import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
  * effective center of rotation. You can ignore this effect. The center of rotation will be offset
  * slightly but your heading will still be fine. This does not affect your overall tracking
  * precision. The heading should still line up.
- *
- * NOTE: this has been refactored to use FTCLib's command-based
  */
 @Config
 @TeleOp(group = "drive")
-public class TrackingWheelLateralDistanceTuner extends CommandOpMode {
-
+public class TrackingWheelLateralDistanceTuner extends LinearOpMode {
     public static int NUM_TURNS = 10;
 
-    private MecanumDriveSubsystem drive;
-    private GamepadEx gamepad;
-    private Button yButton;
-    private double headingAccumulator, lastHeading;
-    private boolean turningFinished;
-
     @Override
-    public void initialize() {
-        drive = new MecanumDriveSubsystem(new SampleMecanumDrive(hardwareMap), false);
+    public void runOpMode() throws InterruptedException {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         if (!(drive.getLocalizer() instanceof StandardTrackingWheelLocalizer)) {
             RobotLog.setGlobalErrorMsg("StandardTrackingWheelLocalizer is not being set in the "
@@ -100,48 +83,48 @@ public class TrackingWheelLateralDistanceTuner extends CommandOpMode {
         telemetry.addLine("Press Y/△ to stop the routine.");
         telemetry.update();
 
-        gamepad = new GamepadEx(gamepad1);
+        waitForStart();
 
-        schedule(new InstantCommand(() -> {
+        if (isStopRequested()) return;
+
+        telemetry.clearAll();
+        telemetry.update();
+
+        double headingAccumulator = 0;
+        double lastHeading = 0;
+
+        boolean tuningFinished = false;
+
+        while (!isStopRequested() && !tuningFinished) {
+            Pose2d vel = new Pose2d(0, 0, -gamepad1.right_stick_x);
+            drive.setDrivePower(vel);
+
+            drive.update();
+
+            double heading = drive.getPoseEstimate().getHeading();
+            double deltaHeading = heading - lastHeading;
+
+            headingAccumulator += Angle.normDelta(deltaHeading);
+            lastHeading = heading;
+
             telemetry.clearAll();
+            telemetry.addLine("Total Heading (deg): " + Math.toDegrees(headingAccumulator));
+            telemetry.addLine("Raw Heading (deg): " + Math.toDegrees(heading));
+            telemetry.addLine();
+            telemetry.addLine("Press Y/△ to conclude routine");
             telemetry.update();
 
-            headingAccumulator = 0;
-            lastHeading = 0;
+            if (gamepad1.y)
+                tuningFinished = true;
+        }
 
-            turningFinished = false;
-        }));
+        telemetry.clearAll();
+        telemetry.addLine("Localizer's total heading: " + Math.toDegrees(headingAccumulator) + "°");
+        telemetry.addLine("Effective LATERAL_DISTANCE: " +
+                (headingAccumulator / (NUM_TURNS * Math.PI * 2)) * StandardTrackingWheelLocalizer.LATERAL_DISTANCE);
 
-        yButton = new GamepadButton(gamepad, GamepadKeys.Button.Y)
-            .whenPressed(() -> turningFinished = true);
+        telemetry.update();
 
-        schedule(new WaitUntilCommand(() -> turningFinished)
-            .deadlineWith(new RunCommand(() -> {
-                Pose2d vel = new Pose2d(0, 0, -gamepad1.right_stick_x);
-                drive.setDrivePower(vel);
-
-                double heading = drive.getPoseEstimate().getHeading();
-                double deltaHeading = heading - lastHeading;
-
-                headingAccumulator += Angle.normDelta(deltaHeading);
-                lastHeading = heading;
-
-                telemetry.clearAll();
-                telemetry.addLine("Total Heading (deg): " + Math.toDegrees(headingAccumulator));
-                telemetry.addLine("Raw Heading (deg): " + Math.toDegrees(heading));
-                telemetry.addLine();
-                telemetry.addLine("Press Y/△ to conclude routine");
-                telemetry.update();
-            }, drive)
-            .whenFinished(() -> {
-                telemetry.clearAll();
-                telemetry.addLine("Localizer's total heading: " + Math.toDegrees(headingAccumulator) + "°");
-                telemetry.addLine("Effective LATERAL_DISTANCE: " +
-                        (headingAccumulator / (NUM_TURNS * Math.PI * 2)) * StandardTrackingWheelLocalizer.LATERAL_DISTANCE);
-
-                telemetry.update();
-            }))
-        );
+        while (!isStopRequested()) idle();
     }
-
 }
