@@ -31,6 +31,8 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     public static double TICKS_PER_REV = 8192;
     public static double WHEEL_RADIUS = 0.74803; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
+    public static double X_MULTIPLIER = 1.2;
+    public static double Y_MULTIPLIER = 1.241;
 
     public static double LATERAL_DISTANCE = 9.457; // in; distance between the left and right wheels
     public static double FORWARD_OFFSET = 4.01; // in; offset of the lateral wheel
@@ -62,9 +64,9 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     @Override
     public List<Double> getWheelPositions() {
         return Arrays.asList(
-                encoderTicksToInches(leftEncoder.getCurrentPosition()),
-                encoderTicksToInches(rightEncoder.getCurrentPosition()),
-                encoderTicksToInches(frontEncoder.getCurrentPosition())
+                X_MULTIPLIER * encoderTicksToInches(leftEncoder.getCurrentPosition()),
+                X_MULTIPLIER * encoderTicksToInches(rightEncoder.getCurrentPosition()),
+                Y_MULTIPLIER * encoderTicksToInches(frontEncoder.getCurrentPosition())
         );
     }
 
@@ -76,9 +78,9 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         //  compensation method
 
         return Arrays.asList(
-                encoderTicksToInches(leftEncoder.getCorrectedVelocity()),
-                encoderTicksToInches(rightEncoder.getCorrectedVelocity()),
-                encoderTicksToInches(frontEncoder.getCorrectedVelocity())
+                X_MULTIPLIER * encoderTicksToInches(leftEncoder.getCorrectedVelocity()),
+                X_MULTIPLIER * encoderTicksToInches(rightEncoder.getCorrectedVelocity()),
+                Y_MULTIPLIER * encoderTicksToInches(frontEncoder.getCorrectedVelocity())
         );
     }
 }

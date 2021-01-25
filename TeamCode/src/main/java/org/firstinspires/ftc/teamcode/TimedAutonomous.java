@@ -45,6 +45,8 @@ public class TimedAutonomous extends LinearOpMode {
         backLeft.setInverted(true);
         shooter.setInverted(true);
 
+        shooter.setRunMode(Motor.RunMode.RawPower);
+
         frontLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRight.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -86,36 +88,41 @@ public class TimedAutonomous extends LinearOpMode {
             double voltage = voltageSensor.getVoltage();
             double shooterSpeed = Math.sqrt(12.35/voltage);
 
-            shooter.set(0.749 * shooterSpeed);
+            double[] velos = new double[3];
+
             for(int i = 0; i < 2; i++){
                 timez.reset();
-                while (!isStopRequested() && timez.milliseconds() < 4000) {
-                    idle();
+                while (!isStopRequested() && timez.milliseconds() < 2000) {
+                    shooter.set(0.8);
+                    velos[0] = shooter.getCorrectedVelocity();
                 }
-                kicker.setPosition(1.0);
+                kicker.setPosition(1.2);
                 timez.reset();
 
                 while (!isStopRequested() && timez.milliseconds() < 200) {
-                    idle();
+                    shooter.set(0.8);
+                    velos[1] = shooter.getCorrectedVelocity();
                 }
-                kicker.setPosition(0.67);
+                kicker.setPosition(0.6);
                 timez.reset();
 
                 while (!isStopRequested() && timez.milliseconds() < 1000) {
-                    idle();
+                    shooter.set(0.8);
+                    velos[2] = shooter.getCorrectedVelocity();
                 }
             }
+
+            telemetry.clearAll();
+            telemetry.addLine(String.format("Speeds: %.2f, %.2f, %.2f", velos[0], velos[1], velos[2]));
+            telemetry.update();
         }
 
         time.reset();
 
-        while (opModeIsActive() && time.seconds() < 2.95) {
+        while (opModeIsActive() && time.seconds() < 3.2) {
             shooter.set(0);
 
             mecDrive.driveRobotCentric(0.35, 0, 0);
-
-            telemetry.addData("Current time", time.seconds());
-            telemetry.update();
         }
 /*
 

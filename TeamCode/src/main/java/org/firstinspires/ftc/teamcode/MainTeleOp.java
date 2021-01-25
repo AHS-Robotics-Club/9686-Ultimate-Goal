@@ -2,6 +2,7 @@
 
 import com.arcrobotics.ftclib.command.OdometrySubsystem;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
+import com.arcrobotics.ftclib.gamepad.ButtonReader;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.gamepad.ToggleButtonReader;
@@ -58,41 +59,35 @@ public class MainTeleOp extends LinearOpMode {
     private Motor.Encoder leftOdometer, rightOdometer, centerOdometer;
     private OdometrySubsystem odometry;
     private ToggleButtonReader buttonReaderY, buttonReaderA, buttonReaderX, buttonReaderB;
+    private ButtonReader flickerBumper;
     private VoltageSensor voltageSensor;
 
 
     @Override
     public void runOpMode() throws InterruptedException {
-        frontLeft = new Motor(hardwareMap, "fL");
-        frontRight = new Motor(hardwareMap, "fR");
-        backLeft = new Motor(hardwareMap, "bL");
-        backRight = new Motor(hardwareMap, "bR");
-/*
+        frontLeft = new Motor(hardwareMap, "bL");
+        frontRight = new Motor(hardwareMap, "bR");
+        backLeft = new Motor(hardwareMap, "fL");
+        backRight = new Motor(hardwareMap, "fR");
+
         intake = new Motor(hardwareMap, "intake");
         secondaryIntake = new Motor(hardwareMap, "secondaryIntake");
         shooter = new Motor(hardwareMap, "shooter");
 
-        kicker = new SimpleServo(hardwareMap, "kicker", 0, 270) {
-        };
-        flicker = new TimedAction(
-                () -> kicker.turnToAngle(80),
-                () -> kicker.turnToAngle(35),
-                100,    // 500 ms between flick positions
-                true
-        );
-*/
+        kicker = new SimpleServo(hardwareMap, "kicker", 0, 270);
+
         driveTrain = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
 //        imu = new RevIMU(hardwareMap);
 
-//        gPad = new GamepadEx(gamepad1);
-/*
+        gPad = new GamepadEx(gamepad1);
+
         buttonReaderY = new ToggleButtonReader(gPad, GamepadKeys.Button.Y);
         buttonReaderA = new ToggleButtonReader(gPad, GamepadKeys.Button.A);
         buttonReaderX = new ToggleButtonReader(gPad, GamepadKeys.Button.X);
         buttonReaderB = new ToggleButtonReader(gPad, GamepadKeys.Button.B);
+        flickerBumper = new ButtonReader(gPad, GamepadKeys.Button.LEFT_BUMPER);
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
- */
 
         // Here we set the distance per pulse of the odometers.
         // This is to keep the units consistent for the odometry.
@@ -106,7 +101,17 @@ public class MainTeleOp extends LinearOpMode {
         frontRight.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-/*
+
+        frontLeft.setInverted(true);
+        frontRight.setInverted(true);
+        backLeft.setInverted(true);
+        backRight.setInverted(true);
+        shooter.setInverted(true);
+
+        shooter.setRunMode(Motor.RunMode.VelocityControl);
+        shooter.setVeloCoefficients(1.1, 0, 0.03);
+        shooter.setFeedforwardCoefficients(0, 1.1);
+/*1`
         odometry = new OdometrySubsystem(new HolonomicOdometry(
                 leftOdometer::getDistance,
                 rightOdometer::getDistance,
@@ -117,18 +122,18 @@ public class MainTeleOp extends LinearOpMode {
         imu.init();
 
  */
+        flicker = new TimedAction(
+                () -> kicker.setPosition(1),
+                () -> kicker.setPosition(0.7),
+                200,
+                true
+        );
 
 
-        backRight.setInverted(true);
-        frontLeft.setInverted(true);
-        frontRight.setInverted(true);
-        backLeft.setInverted(true);
-        shooter.setInverted(true);
-/*
         shooter.setRunMode(Motor.RunMode.VelocityControl);
         shooter.setVeloCoefficients(0.6,0.03,0);
 
- */
+
 /*
         cameraMonitorViewId = this
                 .hardwareMap
@@ -153,43 +158,48 @@ public class MainTeleOp extends LinearOpMode {
         double x = 1;
 
         while (opModeIsActive() && !isStopRequested()) {
-            /*
+
             if(gamepad1.right_bumper){
-                x = 0.25;
+                x = 0.5;
             } else {
                 x = 1;
             }
 
-             */
 
+            if (flickerBumper.isDown() && !flicker.running()) {
+                flicker.reset();
+            }
+            flicker.run();
 
             driveTrain.driveRobotCentric(gPad.getLeftX() * x, gPad.getLeftY() * x, gPad.getRightX() * x);
 
-//            double voltage = voltageSensor.getVoltage();
- //           double shooterSpeed = Math.sqrt(12.35/voltage);
+            double voltage = voltageSensor.getVoltage();
+            double shooterSpeed = Math.sqrt(12.35/voltage);
 
-/*
+
             buttonReaderY.readValue();
             buttonReaderA.readValue();
             buttonReaderX.readValue();
             buttonReaderB.readValue();
 
- */
-/*
+
+
             if(buttonReaderY.getState()){
-                shooter.set(0.81* shooterSpeed);
+                shooter.set(0.69 * shooterSpeed);
             }else if(buttonReaderA.getState()){
-                shooter.set(0.74 * shooterSpeed);
+                shooter.set(0.54 * shooterSpeed);
             }else{
                 shooter.set(0);
             }
 
- */
-/*
-            if(gamepad1.right_trigger >= 0.35 && !flicker.running()){
-                flicker.reset();
+
+            if(gamepad1.right_trigger >= 0.15){
+                kicker.setPosition(1.2);
+                Thread.sleep(150);
+                kicker.setPosition(0.62);
+            } else if (gamepad1.left_trigger >= 0.15){
+                kicker.setPosition(0.2);
             }
-            flicker.run();
 
             if(buttonReaderX.getState()){
                 intake.set(1);
@@ -203,8 +213,9 @@ public class MainTeleOp extends LinearOpMode {
             }
 
 
- */
-            //telemetry.addData("Angle: ", kicker.getAngle());
+
+            telemetry.addData("Angle: ", kicker.getAngle());
+            telemetry.update();
             //telemetry.addData("Stack Height", pipeline.getHeight());
             /*
             telemetry.addData("x", odometry.getPose().getX());
