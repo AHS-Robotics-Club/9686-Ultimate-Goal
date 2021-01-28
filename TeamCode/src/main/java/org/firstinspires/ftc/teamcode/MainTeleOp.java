@@ -54,12 +54,15 @@ public class MainTeleOp extends LinearOpMode {
     private SimpleServo kicker;
     private TimedAction flicker;
     private RevIMU imu;
-    GamepadEx gPad;
+    GamepadEx gPadA, gPadB;
     private MecanumDrive driveTrain;
     private Motor.Encoder leftOdometer, rightOdometer, centerOdometer;
     private OdometrySubsystem odometry;
-    private ToggleButtonReader buttonReaderY, buttonReaderA, buttonReaderX, buttonReaderB;
-    private ButtonReader flickerBumper;
+    private ToggleButtonReader AbuttonReaderY, AbuttonReaderA, AbuttonReaderX, AbuttonReaderB;
+    private ToggleButtonReader BbuttonReaderY, BbuttonReaderA, BbuttonReaderX, BbuttonReaderB;
+
+    private ButtonReader AflickerBumper;
+    private ButtonReader BflickerBumper;
     private VoltageSensor voltageSensor;
 
 
@@ -79,13 +82,24 @@ public class MainTeleOp extends LinearOpMode {
         driveTrain = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
 //        imu = new RevIMU(hardwareMap);
 
-        gPad = new GamepadEx(gamepad1);
+        gPadA = new GamepadEx(gamepad1);
+        gPadB = new GamepadEx(gamepad2);
 
-        buttonReaderY = new ToggleButtonReader(gPad, GamepadKeys.Button.Y);
-        buttonReaderA = new ToggleButtonReader(gPad, GamepadKeys.Button.A);
-        buttonReaderX = new ToggleButtonReader(gPad, GamepadKeys.Button.X);
-        buttonReaderB = new ToggleButtonReader(gPad, GamepadKeys.Button.B);
-        flickerBumper = new ButtonReader(gPad, GamepadKeys.Button.LEFT_BUMPER);
+        AbuttonReaderY = new ToggleButtonReader(gPadA, GamepadKeys.Button.Y);
+        BbuttonReaderY = new ToggleButtonReader(gPadB, GamepadKeys.Button.Y);
+
+        AbuttonReaderA = new ToggleButtonReader(gPadA, GamepadKeys.Button.A);
+        BbuttonReaderA = new ToggleButtonReader(gPadB, GamepadKeys.Button.A);
+
+        AbuttonReaderX = new ToggleButtonReader(gPadA, GamepadKeys.Button.X);
+        BbuttonReaderX = new ToggleButtonReader(gPadB, GamepadKeys.Button.X);
+
+        AbuttonReaderB = new ToggleButtonReader(gPadA, GamepadKeys.Button.B);
+        BbuttonReaderB = new ToggleButtonReader(gPadB, GamepadKeys.Button.B);
+
+        AflickerBumper = new ButtonReader(gPadA, GamepadKeys.Button.LEFT_BUMPER);
+        BflickerBumper = new ButtonReader(gPadB, GamepadKeys.Button.LEFT_BUMPER);
+
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
 
@@ -166,45 +180,52 @@ public class MainTeleOp extends LinearOpMode {
             }
 
 
-            if (flickerBumper.isDown() && !flicker.running()) {
+            if ((AflickerBumper.isDown() && !flicker.running()) || (BflickerBumper.isDown() && !flicker.running())) {
                 flicker.reset();
             }
             flicker.run();
 
-            driveTrain.driveRobotCentric(gPad.getLeftX() * x, gPad.getLeftY() * x, gPad.getRightX() * x);
+            driveTrain.driveRobotCentric(gPadA.getLeftX() * x, gPadA.getLeftY() * x, gPadA.getRightX() * x);
 
             double voltage = voltageSensor.getVoltage();
             double shooterSpeed = Math.sqrt(12.35/voltage);
 
 
-            buttonReaderY.readValue();
-            buttonReaderA.readValue();
-            buttonReaderX.readValue();
-            buttonReaderB.readValue();
+            AbuttonReaderY.readValue();
+            BbuttonReaderY.readValue();
+
+            AbuttonReaderA.readValue();
+            BbuttonReaderA.readValue();
+
+            AbuttonReaderX.readValue();
+            BbuttonReaderX.readValue();
+
+            AbuttonReaderB.readValue();
+            BbuttonReaderB.readValue();
 
 
 
-            if(buttonReaderY.getState()){
+            if(AbuttonReaderY.getState() || BbuttonReaderY.getState()){
                 shooter.set(0.69 * shooterSpeed);
-            }else if(buttonReaderA.getState()){
+            }else if(AbuttonReaderA.getState() || BbuttonReaderA.getState()){
                 shooter.set(0.54 * shooterSpeed);
             }else{
                 shooter.set(0);
             }
 
 
-            if(gamepad1.right_trigger >= 0.15){
+            if(gamepad1.right_trigger >= 0.15|| gamepad2.right_trigger >= 0.15){
                 kicker.setPosition(1.2);
                 Thread.sleep(150);
                 kicker.setPosition(0.62);
-            } else if (gamepad1.left_trigger >= 0.15){
+            } else if (gamepad1.left_trigger >= 0.15 || gamepad2.left_trigger >= 0.15){
                 kicker.setPosition(0.2);
             }
 
-            if(buttonReaderX.getState()){
+            if(AbuttonReaderX.getState() || BbuttonReaderX.getState()){
                 intake.set(1);
                 secondaryIntake.set(1);
-            } else if (buttonReaderB.getState()) {
+            } else if (AbuttonReaderB.getState() || BbuttonReaderB.getState()) {
                 intake.set(-1);
                 secondaryIntake.set(-1);
             } else {
