@@ -1,4 +1,4 @@
-        package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.OdometrySubsystem;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.util.TimedAction;
 
@@ -50,16 +51,18 @@ public class MainTeleOp extends LinearOpMode {
 
     //private int cameraMonitorViewId;
 
-    private Motor frontLeft, frontRight, backLeft, backRight, shooter, intake, secondaryIntake;
-    private SimpleServo kicker;
+    private Motor frontLeft, frontRight, backLeft, backRight, shooter, intake, secondaryIntake, wobbleArm;
+    private SimpleServo kicker, wobbleFingers;
     private TimedAction flicker;
     private RevIMU imu;
     GamepadEx gPadA, gPadB;
     private MecanumDrive driveTrain;
     private Motor.Encoder leftOdometer, rightOdometer, centerOdometer;
     private OdometrySubsystem odometry;
-    private ToggleButtonReader AbuttonReaderY, AbuttonReaderA, AbuttonReaderX, AbuttonReaderB;
-    private ToggleButtonReader BbuttonReaderY, BbuttonReaderA, BbuttonReaderX, BbuttonReaderB;
+    private ToggleButtonReader AbuttonReaderY, AbuttonReaderA, AbuttonReaderX, AbuttonReaderB, AbuttonReaderdPadUp, AButtonReaderdPadDown, AButtonReaderdPadRight, AButtonReaderdPadLeft;
+    private ToggleButtonReader BbuttonReaderY, BbuttonReaderA, BbuttonReaderX, BbuttonReaderB, BbuttonReaderdPadUp, BButtonReaderdPadDown;
+
+    private ElapsedTime time;
 
     private ButtonReader AflickerBumper;
     private ButtonReader BflickerBumper;
@@ -68,22 +71,26 @@ public class MainTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        frontLeft = new Motor(hardwareMap, "bL");
-        frontRight = new Motor(hardwareMap, "bR");
-        backLeft = new Motor(hardwareMap, "fL");
-        backRight = new Motor(hardwareMap, "fR");
+        frontLeft = new Motor(hardwareMap, "fL");
+        frontRight = new Motor(hardwareMap, "fR");
+        backLeft = new Motor(hardwareMap, "bL");
+        backRight = new Motor(hardwareMap, "bR");
 
         intake = new Motor(hardwareMap, "intake");
         secondaryIntake = new Motor(hardwareMap, "secondaryIntake");
         shooter = new Motor(hardwareMap, "shooter");
+        wobbleArm = new Motor(hardwareMap, "wobbleArm");
 
         kicker = new SimpleServo(hardwareMap, "kicker", 0, 270);
+        wobbleFingers = new SimpleServo(hardwareMap, "wobbleFingers", 0, 270);
 
         driveTrain = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
 //        imu = new RevIMU(hardwareMap);
 
         gPadA = new GamepadEx(gamepad1);
         gPadB = new GamepadEx(gamepad2);
+
+        time = new ElapsedTime();
 
         AbuttonReaderY = new ToggleButtonReader(gPadA, GamepadKeys.Button.Y);
         BbuttonReaderY = new ToggleButtonReader(gPadB, GamepadKeys.Button.Y);
@@ -99,6 +106,15 @@ public class MainTeleOp extends LinearOpMode {
 
         AflickerBumper = new ButtonReader(gPadA, GamepadKeys.Button.LEFT_BUMPER);
         BflickerBumper = new ButtonReader(gPadB, GamepadKeys.Button.LEFT_BUMPER);
+
+        AbuttonReaderdPadUp = new ToggleButtonReader(gPadA, GamepadKeys.Button.DPAD_UP);
+        BbuttonReaderdPadUp = new ToggleButtonReader(gPadB, GamepadKeys.Button.DPAD_UP);
+        AButtonReaderdPadDown = new ToggleButtonReader(gPadA, GamepadKeys.Button.DPAD_DOWN);
+        BButtonReaderdPadDown = new ToggleButtonReader(gPadB, GamepadKeys.Button.DPAD_DOWN);
+        AButtonReaderdPadRight = new ToggleButtonReader(gPadA, GamepadKeys.Button.DPAD_RIGHT);
+        AButtonReaderdPadLeft = new ToggleButtonReader(gPadA, GamepadKeys.Button.DPAD_LEFT);
+
+
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
@@ -116,15 +132,13 @@ public class MainTeleOp extends LinearOpMode {
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        frontLeft.setInverted(true);
-        frontRight.setInverted(true);
-        backLeft.setInverted(true);
-        backRight.setInverted(true);
         shooter.setInverted(true);
 
         shooter.setRunMode(Motor.RunMode.VelocityControl);
-        shooter.setVeloCoefficients(1.1, 0, 0.03);
+        shooter.setVeloCoefficients(0.6,0.03,0);
         shooter.setFeedforwardCoefficients(0, 1.1);
+
+
 /*1`
         odometry = new OdometrySubsystem(new HolonomicOdometry(
                 leftOdometer::getDistance,
@@ -134,19 +148,13 @@ public class MainTeleOp extends LinearOpMode {
         ));
 
         imu.init();
-
- */
+    */
         flicker = new TimedAction(
-                () -> kicker.setPosition(1),
-                () -> kicker.setPosition(0.7),
-                200,
+                () -> kicker.setPosition(1.2),
+                () -> kicker.setPosition(0.15),
+                400,
                 true
         );
-
-
-        shooter.setRunMode(Motor.RunMode.VelocityControl);
-        shooter.setVeloCoefficients(0.6,0.03,0);
-
 
 /*
         cameraMonitorViewId = this
@@ -168,13 +176,14 @@ public class MainTeleOp extends LinearOpMode {
 */
 
         waitForStart();
+        time.reset();
 
         double x = 1;
 
         while (opModeIsActive() && !isStopRequested()) {
 
             if(gamepad1.right_bumper){
-                x = 0.5;
+                x = 0.33;
             } else {
                 x = 1;
             }
@@ -185,7 +194,7 @@ public class MainTeleOp extends LinearOpMode {
             }
             flicker.run();
 
-            driveTrain.driveRobotCentric(gPadA.getLeftX() * x, gPadA.getLeftY() * x, gPadA.getRightX() * x);
+            driveTrain.driveRobotCentric(-gPadA.getLeftX() * x, -gPadA.getLeftY() * x, -gPadA.getRightX() * x);
 
             double voltage = voltageSensor.getVoltage();
             double shooterSpeed = Math.sqrt(12.35/voltage);
@@ -203,23 +212,50 @@ public class MainTeleOp extends LinearOpMode {
             AbuttonReaderB.readValue();
             BbuttonReaderB.readValue();
 
+            AbuttonReaderdPadUp.readValue();
+            BbuttonReaderdPadUp.readValue();
 
+            AButtonReaderdPadDown.readValue();
+            BButtonReaderdPadDown.readValue();
+
+            AButtonReaderdPadLeft.readValue();
+            AButtonReaderdPadRight.readValue();
 
             if(AbuttonReaderY.getState() || BbuttonReaderY.getState()){
-                shooter.set(0.69 * shooterSpeed);
+                shooter.set(0.71 * shooterSpeed);
             }else if(AbuttonReaderA.getState() || BbuttonReaderA.getState()){
-                shooter.set(0.54 * shooterSpeed);
+                shooter.set(0.645 * shooterSpeed);
             }else{
                 shooter.set(0);
             }
 
+            if(AbuttonReaderdPadUp.getState() || BbuttonReaderdPadUp.getState()){
+                wobbleFingers.setPosition(0.71);
+            } else {
+                wobbleFingers.setPosition(0);
+            }
+
+            if(AButtonReaderdPadRight.getState()){
+                time.reset();
+                if(time.seconds() <= 1){
+                    wobbleArm.set(0.75);
+                }
+            } else if(AButtonReaderdPadLeft.getState()){
+                time.reset();
+                if(time.seconds() <= 1) {
+                    wobbleArm.set(-0.45);
+                }
+            } else{
+                wobbleArm.set(0);
+            }
+
 
             if(gamepad1.right_trigger >= 0.15|| gamepad2.right_trigger >= 0.15){
-                kicker.setPosition(1.2);
+                kicker.setPosition(0.3); //270
                 Thread.sleep(150);
-                kicker.setPosition(0.62);
+                kicker.setPosition(0.1);
             } else if (gamepad1.left_trigger >= 0.15 || gamepad2.left_trigger >= 0.15){
-                kicker.setPosition(0.2);
+                kicker.setPosition(-1);
             }
 
             if(AbuttonReaderX.getState() || BbuttonReaderX.getState()){
@@ -233,9 +269,9 @@ public class MainTeleOp extends LinearOpMode {
                 secondaryIntake.set(0);
             }
 
-
-
             telemetry.addData("Angle: ", kicker.getAngle());
+            telemetry.addData("Wobble motor pos", wobbleArm.get());
+            telemetry.addData("Wobble fingies pos", wobbleFingers.getPosition());
             telemetry.update();
             //telemetry.addData("Stack Height", pipeline.getHeight());
             /*

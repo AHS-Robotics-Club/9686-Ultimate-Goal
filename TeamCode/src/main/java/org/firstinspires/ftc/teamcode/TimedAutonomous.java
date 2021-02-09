@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.util.TimedAction;
+
 @Autonomous(name="Charles J. Guiteau")
 public class TimedAutonomous extends LinearOpMode {
     //private UGContourRingPipeline pipeline;
@@ -16,12 +18,14 @@ public class TimedAutonomous extends LinearOpMode {
 
     //private int cameraMonitorViewId;
 
-    private Motor frontLeft, backLeft, frontRight, backRight, shooter;
+    private Motor frontLeft, backLeft, frontRight, backRight, shooter, intake, secondaryIntake;
     private SimpleServo kicker;
 
     private MecanumDrive mecDrive;
     private ElapsedTime time, timez;
     private VoltageSensor voltageSensor;
+
+    private TimedAction flickerAction;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -31,7 +35,9 @@ public class TimedAutonomous extends LinearOpMode {
         backRight = new Motor(hardwareMap, "bR");
 
         shooter = new Motor(hardwareMap, "shooter");
-        kicker = new SimpleServo(hardwareMap, "kicker", 0.67, 1) {
+        intake = new Motor(hardwareMap, "intake");
+        secondaryIntake = new Motor(hardwareMap, "secondaryIntake");
+        kicker = new SimpleServo(hardwareMap, "kicker", 0, 360) {
         };
         time = new ElapsedTime();
         timez = new ElapsedTime();
@@ -45,7 +51,9 @@ public class TimedAutonomous extends LinearOpMode {
         backLeft.setInverted(true);
         shooter.setInverted(true);
 
-        shooter.setRunMode(Motor.RunMode.RawPower);
+        shooter.setRunMode(Motor.RunMode.VelocityControl);
+        shooter.setVeloCoefficients(14,0.1,0.1);
+        shooter.setFeedforwardCoefficients(0, 1.07 * 12/voltageSensor.getVoltage());
 
         frontLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -54,6 +62,12 @@ public class TimedAutonomous extends LinearOpMode {
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        flickerAction = new TimedAction(
+                () -> kicker.setPosition(1),
+                () -> kicker.setPosition(0.1),
+                1400,
+                true
+        );
 /*
         cameraMonitorViewId = this
                 .hardwareMap
@@ -63,7 +77,6 @@ public class TimedAutonomous extends LinearOpMode {
                         "id",
                         hardwareMap.appContext.getPackageName()
                 );
-
         camera = OpenCvCameraFactory
                 .getInstance()
                 .createWebcam(hardwareMap.get(WebcamName.class, "Jesus"), cameraMonitorViewId);
@@ -82,50 +95,30 @@ public class TimedAutonomous extends LinearOpMode {
         telemetry.addData("Started Timer", time.seconds());
         telemetry.update();
 
+        while (time.seconds() < 3) shooter.set(0.72);
+
         //UGContourRingPipeline.Height hgt = pipeline.getHeight();
 
-        while (opModeIsActive() && time.seconds() < 16) {
-            double voltage = voltageSensor.getVoltage();
-            double shooterSpeed = Math.sqrt(12.35/voltage);
-
-            double[] velos = new double[3];
-
-            for(int i = 0; i < 2; i++){
-                timez.reset();
-                while (!isStopRequested() && timez.milliseconds() < 2000) {
-                    shooter.set(0.8);
-                    velos[0] = shooter.getCorrectedVelocity();
-                }
-                kicker.setPosition(1.2);
-                timez.reset();
-
-                while (!isStopRequested() && timez.milliseconds() < 200) {
-                    shooter.set(0.8);
-                    velos[1] = shooter.getCorrectedVelocity();
-                }
-                kicker.setPosition(0.6);
-                timez.reset();
-
-                while (!isStopRequested() && timez.milliseconds() < 1000) {
-                    shooter.set(0.8);
-                    velos[2] = shooter.getCorrectedVelocity();
-                }
+        int numShots = 0;
+        flickerAction.reset();
+        while (numShots < 3) {
+            shooter.set(0.72);
+            if (!flickerAction.running()) {
+                numShots++;
+                flickerAction.reset();
             }
-
-            telemetry.clearAll();
-            telemetry.addLine(String.format("Speeds: %.2f, %.2f, %.2f", velos[0], velos[1], velos[2]));
-            telemetry.update();
+            flickerAction.run();
         }
 
         time.reset();
 
-        while (opModeIsActive() && time.seconds() < 3.2) {
+        while (opModeIsActive() && time.seconds() < 3.7) {
             shooter.set(0);
-
+            intake.set(1);
+            secondaryIntake.set(1);
             mecDrive.driveRobotCentric(0.35, 0, 0);
         }
 /*
-
         if(hgt == UGContourRingPipeline.Height.ONE){
             while(opModeIsActive() && time.seconds() < 1.6) {
                 frontLeft.set(-0.7);
@@ -144,9 +137,7 @@ public class TimedAutonomous extends LinearOpMode {
                 telemetry.addData("Current time", time.seconds());
                 telemetry.update();
             }
-
             time.reset();
-
             while(opModeIsActive() && time.seconds() < 1.9) {
                 frontLeft.set(-0.7);
                 frontRight.set(-0.7);
@@ -164,9 +155,7 @@ public class TimedAutonomous extends LinearOpMode {
                 telemetry.addData("Current time", time.seconds());
                 telemetry.update();
             }
-
             time.reset();
-
             while(opModeIsActive() && time.seconds() < 0.80) {
                 frontLeft.set(-0.7);
                 frontRight.set(-0.7);
@@ -175,8 +164,6 @@ public class TimedAutonomous extends LinearOpMode {
                 telemetry.addData("Current time", time.seconds());
                 telemetry.update();
             }
-
  */
     }
 }
-
