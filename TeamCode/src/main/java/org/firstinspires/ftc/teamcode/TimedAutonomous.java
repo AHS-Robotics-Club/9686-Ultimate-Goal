@@ -1,24 +1,37 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.MecanumDriveSubsystem;
 import org.firstinspires.ftc.teamcode.util.TimedAction;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @Autonomous(name="Charles J. Guiteau")
 public class TimedAutonomous extends LinearOpMode {
-    //private UGContourRingPipeline pipeline;
-    //private OpenCvCamera camera;
 
-    //private int cameraMonitorViewId;
+    private Pose2d startPose = new Pose2d(-63, -40, Math.toRadians(180));
+
+    private UGContourRingPipeline pipeline;
+    private OpenCvCamera camera;
+
+    private int cameraMonitorViewId;
 
     private Motor frontLeft, backLeft, frontRight, backRight, shooter, intake, secondaryIntake;
+    private MecanumDriveSubsystem drive;
     private SimpleServo kicker;
 
     private MecanumDrive mecDrive;
@@ -43,17 +56,19 @@ public class TimedAutonomous extends LinearOpMode {
         timez = new ElapsedTime();
 
         mecDrive = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
+
+        drive = new MecanumDriveSubsystem(new SampleMecanumDrive(hardwareMap), false);
+        drive.setPoseEstimate(startPose);
+
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        backRight.setInverted(true);
+
         frontLeft.setInverted(true);
         frontRight.setInverted(true);
-        backLeft.setInverted(true);
-        shooter.setInverted(true);
 
         shooter.setRunMode(Motor.RunMode.VelocityControl);
-        shooter.setVeloCoefficients(14,0.1,0.1);
-        shooter.setFeedforwardCoefficients(0, 1.07 * 12/voltageSensor.getVoltage());
+        shooter.setVeloCoefficients(14, 0.1, 0.1);
+        shooter.setFeedforwardCoefficients(0, 1.07 * 12 / voltageSensor.getVoltage());
 
         frontLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -68,7 +83,7 @@ public class TimedAutonomous extends LinearOpMode {
                 1400,
                 true
         );
-/*
+
         cameraMonitorViewId = this
                 .hardwareMap
                 .appContext
@@ -82,7 +97,7 @@ public class TimedAutonomous extends LinearOpMode {
                 .createWebcam(hardwareMap.get(WebcamName.class, "Jesus"), cameraMonitorViewId);
         camera.setPipeline(pipeline = new UGContourRingPipeline(telemetry, true));
         camera.openCameraDeviceAsync(() -> camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT));
-*/
+
         waitForStart();
 
         frontLeft.set(0);
@@ -92,78 +107,88 @@ public class TimedAutonomous extends LinearOpMode {
 
         time.reset();
         timez.reset();
-        telemetry.addData("Started Timer", time.seconds());
+        UGContourRingPipeline.Height hgt = pipeline.getHeight();
+        telemetry.addData("Ring stack size: ", hgt);
+        telemetry.addData("Ring stack size: ", hgt);
+
         telemetry.update();
 
-        while (time.seconds() < 3) shooter.set(0.72);
+        Trajectory traj0 = drive.trajectoryBuilder(startPose)
+                .back(5)
+                .build();
 
-        //UGContourRingPipeline.Height hgt = pipeline.getHeight();
+        Trajectory traj1 = drive.trajectoryBuilder(traj0.end())
+                .strafeRight(24)
+                .build();
 
-        int numShots = 0;
-        flickerAction.reset();
-        while (numShots < 3) {
-            shooter.set(0.72);
-            if (!flickerAction.running()) {
-                numShots++;
-                flickerAction.reset();
-            }
-            flickerAction.run();
-        }
+        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
+                .splineToSplineHeading(new Pose2d(5, -44, 0), 0.4)
+                .build();
 
-        time.reset();
+        Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
+                .splineToSplineHeading(new Pose2d(-10, -11, 0), 0.0)
+                .build();
 
-        while (opModeIsActive() && time.seconds() < 3.7) {
-            shooter.set(0);
-            intake.set(1);
-            secondaryIntake.set(1);
-            mecDrive.driveRobotCentric(0.35, 0, 0);
-        }
-/*
-        if(hgt == UGContourRingPipeline.Height.ONE){
-            while(opModeIsActive() && time.seconds() < 1.6) {
-                frontLeft.set(-0.7);
-                frontRight.set(-0.7);
-                backLeft.set(-0.7);
-                backRight.set(-0.7);
-                telemetry.addData("Current time", time.seconds());
+
+        if (hgt == UGContourRingPipeline.Height.ONE) {
+            traj2 =  drive.trajectoryBuilder(traj1.end())
+                    .splineToSplineHeading(new Pose2d(53, -44, 0), 0.4)
+                    .build();
+
+            int pp = 0;
+            telemetry.addData("Ring stack size: ", hgt);
+            while (opModeIsActive()) {
                 telemetry.update();
+                drive.update();
+                if (pp == 0) {
+                    drive.followTrajectory(traj0);
+                } else if (pp == 1) {
+                    drive.followTrajectory(traj1);
+                } else if (pp == 2) {
+                    drive.followTrajectory(traj2);
+                } else if (pp == 3) {
+                    drive.followTrajectory(traj3);
+                }
+
+                pp++;
             }
-        } else if (hgt == UGContourRingPipeline.Height.FOUR){
-            while(opModeIsActive() && time.seconds() < 0.10) {
-                frontLeft.set(0.7);
-                frontRight.set(-0.7);
-                backLeft.set(0.7);
-                backRight.set(-0.7);
-                telemetry.addData("Current time", time.seconds());
+        } else if (hgt == UGContourRingPipeline.Height.FOUR) {
+            traj2 =  drive.trajectoryBuilder(traj1.end())
+                    .splineToSplineHeading(new Pose2d(29, -20, 0), 0.4)
+                    .build();
+            int pp = 0;
+            while (opModeIsActive()) {
                 telemetry.update();
-            }
-            time.reset();
-            while(opModeIsActive() && time.seconds() < 1.9) {
-                frontLeft.set(-0.7);
-                frontRight.set(-0.7);
-                backLeft.set(-0.7);
-                backRight.set(-0.7);
-                telemetry.addData("Current time", time.seconds());
-                telemetry.update();
+                drive.update();
+                if (pp == 0) {
+                    drive.followTrajectory(traj0);
+                } else if (pp == 1) {
+                    drive.followTrajectory(traj1);
+                } else if (pp == 2) {
+                    drive.followTrajectory(traj2);
+                } else if (pp == 3) {
+                    drive.followTrajectory(traj3);
+                }
+
+                pp++;
             }
         } else {
-            while(opModeIsActive() && time.seconds() < 0.12) {
-                frontLeft.set(0.7);
-                frontRight.set(-0.7);
-                backLeft.set(0.7);
-                backRight.set(-0.7);
-                telemetry.addData("Current time", time.seconds());
+            int pp = 0;
+            while (opModeIsActive()) {
                 telemetry.update();
+                drive.update();
+                if (pp == 0) {
+                    drive.followTrajectory(traj0);
+                } else if (pp == 1) {
+                    drive.followTrajectory(traj1);
+                } else if (pp == 2) {
+                    drive.followTrajectory(traj2);
+                } else if (pp == 3) {
+                    drive.followTrajectory(traj3);
+                }
+
+                pp++;
             }
-            time.reset();
-            while(opModeIsActive() && time.seconds() < 0.80) {
-                frontLeft.set(-0.7);
-                frontRight.set(-0.7);
-                backLeft.set(-0.7);
-                backRight.set(-0.7);
-                telemetry.addData("Current time", time.seconds());
-                telemetry.update();
-            }
- */
+        }
     }
 }

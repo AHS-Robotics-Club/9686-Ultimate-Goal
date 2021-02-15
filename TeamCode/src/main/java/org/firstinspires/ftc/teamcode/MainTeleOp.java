@@ -25,6 +25,7 @@ import org.firstinspires.ftc.teamcode.util.TimedAction;
  * In this sample, we will use the drive motors' encoder
  * ports as they are not needed due to not using the drive encoders.
  * The external encoders we are using are REV through-bore.
+         * x = 55in
  */
 @TeleOp(name = "John Wilkes Booth")
 public class MainTeleOp extends LinearOpMode {
@@ -131,12 +132,17 @@ public class MainTeleOp extends LinearOpMode {
         frontRight.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooter.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        shooter.setInverted(true);
 
         shooter.setRunMode(Motor.RunMode.VelocityControl);
         shooter.setVeloCoefficients(0.6,0.03,0);
         shooter.setFeedforwardCoefficients(0, 1.1);
+
+        wobbleArm.setRunMode(Motor.RunMode.PositionControl);
+        wobbleArm.setPositionCoefficient(0.005);
+        wobbleArm.setPositionTolerance(10);
+
 
 
 /*1`
@@ -232,20 +238,16 @@ public class MainTeleOp extends LinearOpMode {
             if(AbuttonReaderdPadUp.getState() || BbuttonReaderdPadUp.getState()){
                 wobbleFingers.setPosition(0.71);
             } else {
-                wobbleFingers.setPosition(0);
+                wobbleFingers.setPosition(0.25);
             }
 
             if(AButtonReaderdPadRight.getState()){
-                time.reset();
-                if(time.seconds() <= 1){
-                    wobbleArm.set(0.75);
-                }
+                wobbleArm.setTargetPosition(100);
+                wobbleArm.set(0.6);
             } else if(AButtonReaderdPadLeft.getState()){
-                time.reset();
-                if(time.seconds() <= 1) {
-                    wobbleArm.set(-0.45);
-                }
-            } else{
+                wobbleArm.setTargetPosition(100);
+                wobbleArm.set(-0.6);
+            } else {
                 wobbleArm.set(0);
             }
 
@@ -270,7 +272,8 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             telemetry.addData("Angle: ", kicker.getAngle());
-            telemetry.addData("Wobble motor pos", wobbleArm.get());
+            telemetry.addData("Wobble motor 1", wobbleArm.get());
+            telemetry.addData("Wobble motor 2", wobbleArm.getCurrentPosition());
             telemetry.addData("Wobble fingies pos", wobbleFingers.getPosition());
             telemetry.update();
             //telemetry.addData("Stack Height", pipeline.getHeight());
