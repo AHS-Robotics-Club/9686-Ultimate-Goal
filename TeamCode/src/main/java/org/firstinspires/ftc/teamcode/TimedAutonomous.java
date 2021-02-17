@@ -122,7 +122,7 @@ public class TimedAutonomous extends LinearOpMode {
                 .build();
 
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .splineToSplineHeading(new Pose2d(5, -44, 0), 0.4)
+                .splineToSplineHeading(new Pose2d(5, -44, 0), 0)
                 .build();
 
         Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
@@ -146,7 +146,7 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj1);
                 } else if (pp == 2) {
                     drive.followTrajectory(traj2);
-                    shoot(0.76, shooter, kicker);
+                    shoot(0.76, shooter, kicker, true, drive, traj2);
                 } else if (pp == 3) {
                     drive.followTrajectory(traj3);
                 }
@@ -167,7 +167,7 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj1);
                 } else if (pp == 2) {
                     drive.followTrajectory(traj2);
-                    shoot(0.76, shooter, kicker);
+                    shoot(0.76, shooter, kicker, true, drive, traj2);
                 } else if (pp == 3) {
                     drive.followTrajectory(traj3);
                 }
@@ -185,7 +185,7 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj1);
                 } else if (pp == 2) {
                     drive.followTrajectory(traj2);
-                    shoot(0.76, shooter, kicker);
+                    shoot(0.76, shooter, kicker, true, drive, traj2);
                 } else if (pp == 3) {
                     drive.followTrajectory(traj3);
                 }
@@ -195,31 +195,73 @@ public class TimedAutonomous extends LinearOpMode {
         }
     }
 
-    public static void shoot(double wapow, Motor shoot, SimpleServo kickaFlicka){
+    public static void shoot(double wapow, Motor shoot, SimpleServo kickaFlicka, boolean isPowershot, MecanumDriveSubsystem drive, Trajectory endTraj){
         ElapsedTime temp = new ElapsedTime();
         temp.reset();
         temp.startTime();
+        if(isPowershot){
+            while(temp.time() <= 8) {
+                shoot.set(wapow);
+                if (temp.time() >= 2 && temp.time() <= 2.6) {
+                    kickaFlicka.setPosition(0.3);
+                } else if (temp.time() >= 2.6 && temp.time() <= 3) {
+                    kickaFlicka.setPosition(0.1);
+                }
 
-        while(temp.time() <= 8) {
-            shoot.set(wapow);
-            if (temp.time() >= 2 && temp.time() <= 2.6) {
-                kickaFlicka.setPosition(0.3);
-            } else if (temp.time() >= 2.6 && temp.time() <= 3) {
-                kickaFlicka.setPosition(0.1);
+                if (temp.time() >= 4 && temp.time() <= 4.6) {
+                    kickaFlicka.setPosition(0.3);
+                } else if (temp.time() >= 4.6 && temp.time() <= 5) {
+                    kickaFlicka.setPosition(0.1);
+                }
+
+                if (temp.time() >= 6 && temp.time() <= 6.6) {
+                    kickaFlicka.setPosition(0.3);
+                } else if (temp.time() >= 6.6 && temp.time() <= 7) {
+                    kickaFlicka.setPosition(0.1);
+                }
+
             }
+        } else {
+            while(temp.time() <= 8) {
+                shoot.set(wapow);
+                drive.update();
+                if (temp.time() >= 2 && temp.time() <= 2.6) {
+                    kickaFlicka.setPosition(0.3);
+                } else if (temp.time() >= 2.6 && temp.time() <= 3) {
+                    kickaFlicka.setPosition(0.1);
+                }
 
-            if (temp.time() >= 4 && temp.time() <= 4.6) {
-                kickaFlicka.setPosition(0.3);
-            } else if (temp.time() >= 4.6 && temp.time() <= 5) {
-                kickaFlicka.setPosition(0.1);
+                if(temp.time() >= 3.1 && temp.time() < 4){
+                    Trajectory trajTemp1 =  drive.trajectoryBuilder(endTraj.end())
+                            .splineToSplineHeading(new Pose2d(5, -44, 0.261799), 0)
+                            .build();
+
+                    drive.followTrajectory(trajTemp1);
+                }
+
+
+                if (temp.time() >= 4 && temp.time() <= 4.6) {
+                    kickaFlicka.setPosition(0.3);
+                } else if (temp.time() >= 4.6 && temp.time() <= 5) {
+                    kickaFlicka.setPosition(0.1);
+                }
+
+                if(temp.time() >= 5.1 && temp.time() < 6){
+                    Trajectory trajTemp2 =  drive.trajectoryBuilder(endTraj.end())
+                            .splineToSplineHeading(new Pose2d(5, -44, 0.523598), 0)
+                            .build();
+
+                    drive.followTrajectory(trajTemp2);
+                }
+
+                if (temp.time() >= 6 && temp.time() <= 6.6) {
+                    kickaFlicka.setPosition(0.3);
+                } else if (temp.time() >= 6.6 && temp.time() <= 7) {
+                    kickaFlicka.setPosition(0.1);
+                }
+
             }
-
-            if (temp.time() >= 6 && temp.time() <= 6.6) {
-                kickaFlicka.setPosition(0.3);
-            } else if (temp.time() >= 6.6 && temp.time() <= 7) {
-                kickaFlicka.setPosition(0.1);
-            }
-
         }
+
     }
 }
