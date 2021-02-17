@@ -260,7 +260,7 @@ public class MainTeleOp extends LinearOpMode {
                 }
             }
 
-            if(BButtonReaderdPadDown.getState()){
+            if(BButtonReaderdPadDown.isDown()){
                 wobbleArm.set(-0.5);
             } else {
                 wobbleArm.set(0);
