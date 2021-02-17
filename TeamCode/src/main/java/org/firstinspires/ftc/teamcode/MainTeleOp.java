@@ -185,6 +185,7 @@ public class MainTeleOp extends LinearOpMode {
         time.reset();
 
         double x = 1;
+        boolean awooga = true;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -242,15 +243,21 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             if (AButtonReaderdPadRight.getState()) {
+                awooga = true;
                 wobbleArm.setTargetPosition(-10);
             } else if(AButtonReaderdPadLeft.getState()){
+                awooga = false;
                 wobbleArm.setTargetPosition(-375);
             }
 
             if (wobbleArm.atTargetPosition()) {
                 wobbleArm.stopMotor();
             } else {
-                wobbleArm.set(0.7);
+                if(awooga){
+                    wobbleArm.set(0.7);
+                } else {
+                    wobbleArm.set(0.5);
+                }
             }
 
 
