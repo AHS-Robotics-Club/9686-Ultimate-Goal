@@ -242,15 +242,15 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             if (AButtonReaderdPadRight.getState()) {
-                wobbleArm.setTargetPosition(100);
-            } else {
-                wobbleArm.setTargetPosition(0);
+                wobbleArm.setTargetPosition(-10);
+            } else if(AButtonReaderdPadLeft.getState()){
+                wobbleArm.setTargetPosition(-375);
             }
 
             if (wobbleArm.atTargetPosition()) {
                 wobbleArm.stopMotor();
             } else {
-                wobbleArm.set(0.6);
+                wobbleArm.set(0.7);
             }
 
 
