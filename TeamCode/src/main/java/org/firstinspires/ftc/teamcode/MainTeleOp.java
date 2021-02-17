@@ -260,6 +260,12 @@ public class MainTeleOp extends LinearOpMode {
                 }
             }
 
+            if(BButtonReaderdPadDown.getState()){
+                wobbleArm.set(-0.5);
+            } else {
+                wobbleArm.set(0);
+            }
+
 
             if(gamepad1.right_trigger >= 0.15|| gamepad2.right_trigger >= 0.15){
                 kicker.setPosition(0.3); //270
