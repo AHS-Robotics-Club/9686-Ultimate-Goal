@@ -132,7 +132,10 @@ public class MainTeleOp extends LinearOpMode {
         frontRight.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooter.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        shooter.resetEncoder();
+        wobbleArm.resetEncoder();
+
 
 
         shooter.setRunMode(Motor.RunMode.VelocityControl);
