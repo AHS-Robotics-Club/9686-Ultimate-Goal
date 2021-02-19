@@ -133,14 +133,16 @@ public class MainTeleOp extends LinearOpMode {
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        shooter.setInverted(true);
+
         shooter.resetEncoder();
         wobbleArm.resetEncoder();
 
 
 
         shooter.setRunMode(Motor.RunMode.VelocityControl);
-        shooter.setVeloCoefficients(0.6,0.03,0);
-        shooter.setFeedforwardCoefficients(0, 1.1);
+        shooter.setVeloCoefficients(0.3,0,0);
+        shooter.setFeedforwardCoefficients(1, 1.305);
 
         wobbleArm.setRunMode(Motor.RunMode.PositionControl);
         wobbleArm.setPositionCoefficient(0.005);
@@ -232,9 +234,9 @@ public class MainTeleOp extends LinearOpMode {
             AButtonReaderdPadRight.readValue();
 
             if(AbuttonReaderY.getState() || BbuttonReaderY.getState()){
-                shooter.set(0.71 * shooterSpeed);
+                shooter.set(0.77 * shooterSpeed);
             }else if(AbuttonReaderA.getState() || BbuttonReaderA.getState()){
-                shooter.set(0.645 * shooterSpeed);
+                shooter.set(0.68 * shooterSpeed);
             }else{
                 shooter.set(0);
             }
@@ -247,10 +249,10 @@ public class MainTeleOp extends LinearOpMode {
 
             if (AButtonReaderdPadRight.getState()) {
                 awooga = true;
-                wobbleArm.setTargetPosition(-10);
+                wobbleArm.setTargetPosition(90);
             } else if(AButtonReaderdPadLeft.getState()){
                 awooga = false;
-                wobbleArm.setTargetPosition(-375);
+                wobbleArm.setTargetPosition(0);
             }
 
             if (wobbleArm.atTargetPosition()) {

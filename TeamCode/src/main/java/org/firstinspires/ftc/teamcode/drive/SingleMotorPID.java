@@ -24,7 +24,7 @@ public class SingleMotorPID extends CommandOpMode {
         TUNING_MODE
     }
 
-    public static double kP = 1.1, kI = 0, kD = 0.05, kS = 0, kV = 0.89;
+    public static double kP = 0.3, kI = 0, kD = 0, kS = 1, kV = 1.305;
 
     private GamepadEx gamepad;
     private Motor motor;
