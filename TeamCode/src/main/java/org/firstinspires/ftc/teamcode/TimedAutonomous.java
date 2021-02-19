@@ -150,8 +150,10 @@ public class TimedAutonomous extends LinearOpMode {
                 if (pp == 1) {
                     drive.followTrajectory(traj2);
                 } else if (pp == 2) {
-                    Trajectory tt = shoot(0.76, shooter, kicker, true, drive, traj2);
-                    traj3 =  drive.trajectoryBuilder(new Pose2d(-10, -11, Math.toRadians(20)))
+                    shoot(0.76, shooter, kicker, true, drive, traj2);
+                    Pose2d temp = new Pose2d(-10, -11, Math.toRadians(20));
+
+                    traj3 =  drive.trajectoryBuilder(temp)
                             .splineToSplineHeading(new Pose2d(29, -20, 0), 0)
                             .build();
                     drive.followTrajectory(traj3);
@@ -169,8 +171,10 @@ public class TimedAutonomous extends LinearOpMode {
                 if (pp == 1) {
                     drive.followTrajectory(traj2);
                 } else if (pp == 2) {
-                    Trajectory tt = shoot(0.76, shooter, kicker, true, drive, traj2);
-                    traj3 =  drive.trajectoryBuilder(new Pose2d(-10, -11, Math.toRadians(20)))
+                    shoot(0.76, shooter, kicker, true, drive, traj2);
+                    Pose2d temp = new Pose2d(-10, -11, Math.toRadians(20));
+
+                    traj3 =  drive.trajectoryBuilder(temp)
                             .splineToSplineHeading(new Pose2d(53, -44, 0), 0)
                             .build();
                     drive.followTrajectory(traj3);
@@ -187,8 +191,10 @@ public class TimedAutonomous extends LinearOpMode {
                 if (pp == 1) {
                     drive.followTrajectory(traj2);
                 } else if (pp == 2) {
-                    Trajectory tt = shoot(0.76, shooter, kicker, true, drive, traj2);
-                    traj3 = drive.trajectoryBuilder(new Pose2d(-10, -11, Math.toRadians(20)))
+                    shoot(0.76, shooter, kicker, true, drive, traj2);
+                    Pose2d temp = new Pose2d(-10, -11, Math.toRadians(20));
+
+                    traj3 = drive.trajectoryBuilder(temp)
                             .splineToSplineHeading(new Pose2d(5, -44, 0), 0)
                             .build();
                     drive.followTrajectory(traj3);
