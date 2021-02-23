@@ -38,9 +38,9 @@ public class TimedAutonomous extends LinearOpMode {
 
     private int cameraMonitorViewId;
 
-    private Motor frontLeft, backLeft, frontRight, backRight, shooter, intake, secondaryIntake;
+    private Motor frontLeft, backLeft, frontRight, backRight, shooter, intake, secondaryIntake, wobbleArm;
     private SampleMecanumDrive drive;
-    private SimpleServo kicker;
+    private SimpleServo kicker, wobbleFingers;
 
     private MecanumDrive mecDrive;
     private ElapsedTime time, timez;
@@ -60,6 +60,8 @@ public class TimedAutonomous extends LinearOpMode {
         secondaryIntake = new Motor(hardwareMap, "secondaryIntake");
         kicker = new SimpleServo(hardwareMap, "kicker", 0, 270) {
         };
+        wobbleFingers = new SimpleServo(hardwareMap, "wobbleFingers", 0, 270);
+        wobbleArm = new Motor(hardwareMap, "wobbleArm");
         time = new ElapsedTime();
         timez = new ElapsedTime();
 
@@ -87,6 +89,8 @@ public class TimedAutonomous extends LinearOpMode {
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        wobbleArm.resetEncoder();
+
         flickerAction = new TimedAction(
                 () -> kicker.setPosition(1),
                 () -> kicker.setPosition(0.1),
@@ -110,6 +114,8 @@ public class TimedAutonomous extends LinearOpMode {
 
         waitForStart();
 
+        wobbleFingers.setPosition(0.71);
+
         frontLeft.set(0);
         frontRight.set(0);
         backLeft.set(0);
@@ -124,22 +130,31 @@ public class TimedAutonomous extends LinearOpMode {
         telemetry.update();
 
         Trajectory traj2 = drive.trajectoryBuilder(startPose)
-                .splineTo(
-                        new Vector2d(-10, -11), 0.5,
+                .splineToSplineHeading(
+                        new Pose2d(-10, -11, Math.toRadians(-1.8)), 0.5,
                         new MinVelocityConstraint(
                                 Arrays.asList(
                                         new AngularVelocityConstraint(DriveConstants.MAX_ANG_VEL),
-                                        new MecanumVelocityConstraint(20, DriveConstants.TRACK_WIDTH)
+                                        new MecanumVelocityConstraint(25, DriveConstants.TRACK_WIDTH)
                                 )
                         ),
                         new ProfileAccelerationConstraint(DriveConstants.MAX_ACCEL)
                 )
                 //.splineToSplineHeading(new Pose2d(-10, -11, Math.toRadians(-5)), 0.5)
                 .build();
-
+        Trajectory traj3 = null;
+/*
         Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
                 .splineToSplineHeading(new Pose2d(5, -44, 0), 0)
                 .build();
+
+ */
+
+        Trajectory traj4 = drive.trajectoryBuilder(traj3.end())
+                .splineToSplineHeading(startPose, 0)
+                .build();
+
+        Trajectory traj5 = null;
 
         if (hgt == UGContourRingPipeline.Height.ONE) {
             int pp = 0;
@@ -150,14 +165,26 @@ public class TimedAutonomous extends LinearOpMode {
                 if (pp == 1) {
                     drive.followTrajectory(traj2);
                 } else if (pp == 2) {
-                    shoot(0.76, shooter, kicker, true, drive, traj2);
-                    Pose2d temp = new Pose2d(-10, -11, Math.toRadians(20));
-
-                    traj3 =  drive.trajectoryBuilder(temp)
-                            .splineToSplineHeading(new Pose2d(29, -20, 0), 0)
+                    shoot(0.82, shooter, kicker, true, drive, traj2);
+                    shooter.set(0);
+                    telemetry.addData("running 1 ring lol", 1);
+                    traj3 =  drive.trajectoryBuilder(traj2.end())
+                            .lineToLinearHeading(new Pose2d(29, -20, 0))
                             .build();
                     drive.followTrajectory(traj3);
-                    shooter.set(0);
+                } else if(pp == 3){
+                    wobbleGrab(wobbleFingers, wobbleArm, false);
+                } else if(pp == 4){
+                    drive.followTrajectory(traj4);
+                } else if(pp == 5){
+                    wobbleGrab(wobbleFingers, wobbleArm, true);
+                } else if(pp == 6){
+                    traj5 = drive.trajectoryBuilder(traj4.end())
+                            .lineToLinearHeading(new Pose2d(29, -20, 0))
+                            .build();
+                    drive.followTrajectory(traj5);
+                } else if(pp == 7){
+                    wobbleGrab(wobbleFingers, wobbleArm, false);
                 }
 
                 pp++;
@@ -171,15 +198,28 @@ public class TimedAutonomous extends LinearOpMode {
                 if (pp == 1) {
                     drive.followTrajectory(traj2);
                 } else if (pp == 2) {
-                    shoot(0.76, shooter, kicker, true, drive, traj2);
-                    Pose2d temp = new Pose2d(-10, -11, Math.toRadians(20));
-
-                    traj3 =  drive.trajectoryBuilder(temp)
+                    shoot(0.82, shooter, kicker, true, drive, traj2);
+                    shooter.set(0);
+                    telemetry.addData("running 4 ring lol", 4);
+                    traj3 =  drive.trajectoryBuilder(traj2.end())
                             .splineToSplineHeading(new Pose2d(53, -44, 0), 0)
                             .build();
                     drive.followTrajectory(traj3);
-                    shooter.set(0);
+                } else if(pp == 3){
+                    wobbleGrab(wobbleFingers, wobbleArm, false);
+                } else if(pp == 4){
+                    drive.followTrajectory(traj4);
+                } else if(pp == 5){
+                    wobbleGrab(wobbleFingers, wobbleArm, true);
+                } else if(pp == 6){
+                    traj5 = drive.trajectoryBuilder(traj4.end())
+                            .lineToLinearHeading(new Pose2d(53, -44, 0))
+                            .build();
+                    drive.followTrajectory(traj5);
+                } else if(pp == 7){
+                    wobbleGrab(wobbleFingers, wobbleArm, false);
                 }
+
 
                 pp++;
             }
@@ -191,97 +231,128 @@ public class TimedAutonomous extends LinearOpMode {
                 if (pp == 1) {
                     drive.followTrajectory(traj2);
                 } else if (pp == 2) {
-                    shoot(0.76, shooter, kicker, true, drive, traj2);
-                    Pose2d temp = new Pose2d(-10, -11, Math.toRadians(20));
-
-                    traj3 = drive.trajectoryBuilder(temp)
-                            .splineToSplineHeading(new Pose2d(5, -44, 0), 0)
+                    shoot(0.82, shooter, kicker, true, drive, traj2);
+                    shooter.set(0);
+                    telemetry.addData("running 0 ring lol", 0);
+                    traj3 = drive.trajectoryBuilder(traj2.end())
+                            .lineToLinearHeading(new Pose2d(5, -44, 0))
                             .build();
                     drive.followTrajectory(traj3);
-                    shooter.set(0);
+                } else if(pp == 3){
+                    wobbleGrab(wobbleFingers, wobbleArm, false);
+                } else if(pp == 4){
+                    drive.followTrajectory(traj4);
+                } else if(pp == 5){
+                    wobbleGrab(wobbleFingers, wobbleArm, true);
+                } else if(pp == 6){
+                    traj5 = drive.trajectoryBuilder(traj4.end())
+                            .lineToLinearHeading(new Pose2d(5, -44, 0))
+                            .build();
+                    drive.followTrajectory(traj5);
+                } else if(pp == 7){
+                    wobbleGrab(wobbleFingers, wobbleArm, false);
                 }
+
 
                 pp++;
             }
         }
     }
 
-    public static Trajectory shoot(double wapow, Motor shoot, SimpleServo kickaFlicka, boolean isPowershot, SampleMecanumDrive drive, Trajectory endTraj){
+    public static void shoot(double wapow, Motor shoot, SimpleServo kickaFlicka, boolean isPowershot, SampleMecanumDrive drive, Trajectory endTraj){
         ElapsedTime temp = new ElapsedTime();
         temp.reset();
         temp.startTime();
         System.out.println("Time: " + temp.time());
         if(isPowershot){
-            while(temp.time() <= 12) {
+            while(temp.time() <= 6.4) {
                 shoot.set(wapow);
                 drive.update();
 
-                if(temp.time() >= 0 && temp.time() < 1){
-                    drive.turn(Math.toRadians(-5));
-                    drive.update();
-                }
-
-                if (temp.time() >= 2 && temp.time() <= 3) {
+                if (temp.time() >= 2 && temp.time() <= 2.2) {
                     kickaFlicka.setPosition(0.3);
-                } else if (temp.time() >= 3 && temp.time() <= 4) {
+                } else if (temp.time() >= 2.2 && temp.time() <= 2.4) {
                     kickaFlicka.setPosition(0);
                 }
 
 
-                if(temp.time() >= 4.5 && temp.time() < 5){
-                    drive.turn(Math.toRadians(15));
+                if(temp.time() >= 3 && temp.time() < 3.5){
+                    drive.turn(Math.toRadians(16));
                     drive.update();
                 }
 
-                if (temp.time() >= 6 && temp.time() <= 7) {
+                if (temp.time() >= 4 && temp.time() <= 4.2) {
                     kickaFlicka.setPosition(0.3);
-                } else if (temp.time() >= 7 && temp.time() <= 8) {
+                } else if (temp.time() >= 4.2 && temp.time() <= 4.4) {
                     kickaFlicka.setPosition(0);
                 }
 
-                if(temp.time() >= 8.5 && temp.time() < 9){
-                    drive.turn(Math.toRadians(20));
+                if(temp.time() >= 5 && temp.time() < 5.5){
+                    drive.turn(Math.toRadians(17));
                     drive.update();
                 }
 
-                if (temp.time() >= 10 && temp.time() <= 11) {
+                if (temp.time() >= 6 && temp.time() <= 6.2) {
                     kickaFlicka.setPosition(0.3);
-                } else if (temp.time() >= 11 && temp.time() <= 12) {
+                } else if (temp.time() >= 6.2 && temp.time() <= 6.4) {
                     kickaFlicka.setPosition(0);
                 }
 
             }
-
-            Trajectory retTraj = drive.trajectoryBuilder(endTraj.end())
-                    .splineToSplineHeading(new Pose2d(-10, -11, -0.523598), 0)
-                    .build();
-
-            return endTraj;
 
         } else {
 
-            while(temp.time() <= 5) {
-                shoot.set(wapow);
-                if (temp.time() >= 0 && temp.time() <= 0.5) {
+            while(temp.time() <= 4.4) {
+                shoot.set(1);
+
+                if (temp.time() >= 0.1 && temp.time() <= 1) {
+                    drive.turn(Math.toRadians(-13));
+                    drive.update();
+                }
+
+
+                if (temp.time() >= 2 && temp.time() <= 2.2) {
                     kickaFlicka.setPosition(0.3);
-                } else if (temp.time() >= 0.5 && temp.time() <= 1) {
+                } else if (temp.time() >= 2.2 && temp.time() <= 2.4) {
                     kickaFlicka.setPosition(0);
                 }
 
 
-                if (temp.time() >= 2 && temp.time() <= 2.5) {
+                if (temp.time() >= 3 && temp.time() <= 3.2) {
                     kickaFlicka.setPosition(0.3);
-                } else if (temp.time() >= 2.5 && temp.time() <= 3) {
+                } else if (temp.time() >= 3.2 && temp.time() <= 3.4) {
                     kickaFlicka.setPosition(0);
                 }
 
-                if (temp.time() >= 4 && temp.time() <= 4.5) {
+                if (temp.time() >= 4 && temp.time() <= 4.2) {
                     kickaFlicka.setPosition(0.3);
-                } else if (temp.time() >= 4.5 && temp.time() <= 5) {
+                } else if (temp.time() >= 4.2 && temp.time() <= 4.4) {
                     kickaFlicka.setPosition(0);
                 }
             }
-            return endTraj;
+        }
+
+        shoot.set(0);
+
+    }
+
+    public static void wobbleGrab(SimpleServo fingies, Motor armie, boolean pickUp){
+        ElapsedTime tomp = new ElapsedTime();
+        tomp.reset();
+        tomp.startTime();
+        if(pickUp){
+            if(tomp.time() >= 0.1 && tomp.time() <= 0.5){
+                fingies.setPosition(0.71);
+                //armie.setPosition();
+            }
+        } else {
+            if(tomp.time() >= 0.1 && tomp.time() <= 0.5){
+                fingies.setPosition(0.25);
+                //armie.setPosition();
+            }
+
         }
     }
 }
+
+

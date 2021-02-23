@@ -249,27 +249,29 @@ public class MainTeleOp extends LinearOpMode {
 
             if (AButtonReaderdPadRight.getState()) {
                 awooga = true;
-                wobbleArm.setTargetPosition(90);
+                wobbleArm.setTargetPosition(100);
             } else if(AButtonReaderdPadLeft.getState()){
                 awooga = false;
-                wobbleArm.setTargetPosition(0);
+                wobbleArm.setTargetPosition(-100);
             }
 
             if (wobbleArm.atTargetPosition()) {
                 wobbleArm.stopMotor();
             } else {
                 if(awooga){
-                    wobbleArm.set(0.7);
+                    wobbleArm.set(1);
                 } else {
-                    wobbleArm.set(0.5);
+                    wobbleArm.set(1);
                 }
             }
-
+/*
             if(BButtonReaderdPadDown.isDown()){
                 wobbleArm.set(-0.5);
             } else {
                 wobbleArm.set(0);
             }
+
+ */
 
 
             if(gamepad1.right_trigger >= 0.15|| gamepad2.right_trigger >= 0.15){
