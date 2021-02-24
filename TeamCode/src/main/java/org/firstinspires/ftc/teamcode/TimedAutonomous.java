@@ -79,8 +79,8 @@ public class TimedAutonomous extends LinearOpMode {
 
 
         shooter.setRunMode(Motor.RunMode.VelocityControl);
-        shooter.setVeloCoefficients(0.3,0,0);
-        shooter.setFeedforwardCoefficients(1, 1.305 * 12 / voltageSensor.getVoltage());
+        shooter.setVeloCoefficients(18.2,0,0.2);
+        shooter.setFeedforwardCoefficients(0, 1.4 * 12 / voltageSensor.getVoltage());
 
         frontLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
