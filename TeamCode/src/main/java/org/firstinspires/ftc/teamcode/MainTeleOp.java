@@ -249,10 +249,26 @@ public class MainTeleOp extends LinearOpMode {
 
             if (AButtonReaderdPadRight.getState()) {
                 awooga = true;
-                wobbleArm.setTargetPosition(100);
+                ElapsedTime temp = new ElapsedTime();
+                temp.reset();
+                temp.startTime();
+
+                if(temp.time() >= 0 && temp.time() <= 0.1){
+                    wobbleArm.setTargetPosition(10);
+                } else {
+                    wobbleArm.set(0);
+                }
             } else if(AButtonReaderdPadLeft.getState()){
                 awooga = false;
-                wobbleArm.setTargetPosition(-100);
+                ElapsedTime temp = new ElapsedTime();
+                temp.reset();
+                temp.startTime();
+
+                if(temp.time() >= 0 && temp.time() <= 0.1){
+                    wobbleArm.setTargetPosition(-10);
+                } else {
+                    wobbleArm.set(0);
+                }
             }
 
             if (wobbleArm.atTargetPosition()) {
