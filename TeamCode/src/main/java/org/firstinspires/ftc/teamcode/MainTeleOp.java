@@ -134,6 +134,7 @@ public class MainTeleOp extends LinearOpMode {
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         shooter.setInverted(true);
+        secondaryIntake.setInverted(true);
 
         shooter.resetEncoder();
         wobbleArm.resetEncoder();
@@ -247,7 +248,11 @@ public class MainTeleOp extends LinearOpMode {
                 wobbleFingers.setPosition(0.25);
             }
 
-            if (AButtonReaderdPadRight.getState()) {
+            if (AButtonReaderdPadLeft.getState()) {
+                wobbleArm.setTargetPosition(180);
+            } else if(AButtonReaderdPadRight.getState()){
+                wobbleArm.setTargetPosition(-130);
+                /*
                 awooga = true;
                 ElapsedTime temp = new ElapsedTime();
                 temp.reset();
@@ -265,10 +270,14 @@ public class MainTeleOp extends LinearOpMode {
                 temp.startTime();
 
                 if(temp.time() >= 0 && temp.time() <= 0.1){
-                    wobbleArm.setTargetPosition(-10);
+                    wobbleArm.setTargetPosition(-100);
                 } else {
                     wobbleArm.set(0);
                 }
+
+                 */
+            } else {
+                wobbleArm.setTargetPosition(0);
             }
 
             if (wobbleArm.atTargetPosition()) {
