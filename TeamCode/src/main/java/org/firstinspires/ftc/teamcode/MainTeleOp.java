@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+ package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.OdometrySubsystem;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
@@ -162,9 +162,9 @@ public class MainTeleOp extends LinearOpMode {
         imu.init();
     */
         flicker = new TimedAction(
-                () -> kicker.setPosition(1.2),
-                () -> kicker.setPosition(0.15),
-                400,
+                () -> kicker.setPosition(0.4),
+                () -> kicker.setPosition(0.2),
+                80,
                 true
         );
 
@@ -192,6 +192,7 @@ public class MainTeleOp extends LinearOpMode {
 
         double x = 1;
         boolean awooga = true;
+        boolean movingBack = false;
 
         while (opModeIsActive() && !isStopRequested()) {
 
@@ -248,46 +249,18 @@ public class MainTeleOp extends LinearOpMode {
                 wobbleFingers.setPosition(0.25);
             }
 
-            if (AButtonReaderdPadLeft.getState()) {
-                wobbleArm.setTargetPosition(180);
-            } else if(AButtonReaderdPadRight.getState()){
-                wobbleArm.setTargetPosition(-130);
-                /*
-                awooga = true;
-                ElapsedTime temp = new ElapsedTime();
-                temp.reset();
-                temp.startTime();
-
-                if(temp.time() >= 0 && temp.time() <= 0.1){
-                    wobbleArm.setTargetPosition(10);
-                } else {
-                    wobbleArm.set(0);
-                }
-            } else if(AButtonReaderdPadLeft.getState()){
-                awooga = false;
-                ElapsedTime temp = new ElapsedTime();
-                temp.reset();
-                temp.startTime();
-
-                if(temp.time() >= 0 && temp.time() <= 0.1){
-                    wobbleArm.setTargetPosition(-100);
-                } else {
-                    wobbleArm.set(0);
-                }
-
-                 */
-            } else {
-                wobbleArm.setTargetPosition(0);
+            if(AButtonReaderdPadRight.wasJustPressed()){
+                wobbleArm.setTargetPosition(-75);
+                movingBack = false;
+            } else if (AButtonReaderdPadLeft.wasJustPressed()){
+                wobbleArm.setTargetPosition(-320);
+                movingBack = true;
             }
 
             if (wobbleArm.atTargetPosition()) {
                 wobbleArm.stopMotor();
             } else {
-                if(awooga){
-                    wobbleArm.set(1);
-                } else {
-                    wobbleArm.set(1);
-                }
+                wobbleArm.set(movingBack ? 1 : 0.8);
             }
 /*
             if(BButtonReaderdPadDown.isDown()){
