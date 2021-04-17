@@ -1,4 +1,4 @@
- package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
 import com.arcrobotics.ftclib.command.OdometrySubsystem;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
@@ -52,8 +52,8 @@ public class MainTeleOp extends LinearOpMode {
 
     //private int cameraMonitorViewId;
 
-    private Motor frontLeft, frontRight, backLeft, backRight, shooter, intake, secondaryIntake, wobbleArm;
-    private SimpleServo kicker, wobbleFingers;
+    private Motor frontLeft, frontRight, backLeft, backRight, shooterF, shooterB, intake, secondaryIntake;
+    private SimpleServo kicker, wobbleFingers, wobbleArmL, wobbleArmR;
     private TimedAction flicker;
     private RevIMU imu;
     GamepadEx gPadA, gPadB;
@@ -79,11 +79,13 @@ public class MainTeleOp extends LinearOpMode {
 
         intake = new Motor(hardwareMap, "intake");
         secondaryIntake = new Motor(hardwareMap, "secondaryIntake");
-        shooter = new Motor(hardwareMap, "shooter");
-        wobbleArm = new Motor(hardwareMap, "wobbleArm");
+        shooterF = new Motor(hardwareMap, "shooterF");
+        shooterB = new Motor(hardwareMap, "shooterB");
 
         kicker = new SimpleServo(hardwareMap, "kicker", 0, 270);
         wobbleFingers = new SimpleServo(hardwareMap, "wobbleFingers", 0, 270);
+        wobbleArmL = new SimpleServo(hardwareMap, "wobbleArmL", 0, 270);
+        wobbleArmR = new SimpleServo(hardwareMap, "wobbleArmR", 0, 270);
 
         driveTrain = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
 //        imu = new RevIMU(hardwareMap);
@@ -133,24 +135,20 @@ public class MainTeleOp extends LinearOpMode {
         backLeft.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        shooter.setInverted(true);
-        secondaryIntake.setInverted(true);
+        shooterB.setInverted(true);
 
-        shooter.resetEncoder();
-        wobbleArm.resetEncoder();
-
-
-
-        shooter.setRunMode(Motor.RunMode.VelocityControl);
-        shooter.setVeloCoefficients(0.3,0,0);
-        shooter.setFeedforwardCoefficients(1, 1.305);
-
-        wobbleArm.setRunMode(Motor.RunMode.PositionControl);
-        wobbleArm.setPositionCoefficient(0.005);
-        wobbleArm.setPositionTolerance(10);
+        shooterF.resetEncoder();
+        shooterB.resetEncoder();
 
 
 
+        shooterF.setRunMode(Motor.RunMode.VelocityControl);
+        shooterF.setVeloCoefficients(0.3,0,0);
+        shooterF.setFeedforwardCoefficients(1, 1.305);
+        shooterB.setRunMode(Motor.RunMode.VelocityControl);
+        shooterB.setVeloCoefficients(0.3,0,0);
+        shooterB.setFeedforwardCoefficients(1, 1.305);
+        
 /*1`
         odometry = new OdometrySubsystem(new HolonomicOdometry(
                 leftOdometer::getDistance,
@@ -161,12 +159,15 @@ public class MainTeleOp extends LinearOpMode {
 
         imu.init();
     */
+
         flicker = new TimedAction(
-                () -> kicker.setPosition(0.4),
+                () -> kicker.setPosition(0.6),
                 () -> kicker.setPosition(0.2),
-                80,
+                120,
                 true
         );
+
+
 
 /*
         cameraMonitorViewId = this
@@ -236,11 +237,14 @@ public class MainTeleOp extends LinearOpMode {
             AButtonReaderdPadRight.readValue();
 
             if(AbuttonReaderY.getState() || BbuttonReaderY.getState()){
-                shooter.set(0.77 * shooterSpeed);
+                shooterF.set(0.9 * shooterSpeed);
+                shooterB.set(0.9 * shooterSpeed);
             }else if(AbuttonReaderA.getState() || BbuttonReaderA.getState()){
-                shooter.set(0.68 * shooterSpeed);
+                shooterF.set(0.68 * shooterSpeed);
+                shooterB.set(0.68 * shooterSpeed);
             }else{
-                shooter.set(0);
+                shooterF.set(0);
+                shooterB.set(0);
             }
 
             if(AbuttonReaderdPadUp.getState() || BbuttonReaderdPadUp.getState()){
@@ -250,18 +254,13 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             if(AButtonReaderdPadRight.wasJustPressed()){
-                wobbleArm.setTargetPosition(-75);
-                movingBack = false;
+                wobbleArmL.setPosition(0);
+                wobbleArmR.setPosition(0);
             } else if (AButtonReaderdPadLeft.wasJustPressed()){
-                wobbleArm.setTargetPosition(-320);
-                movingBack = true;
+                wobbleArmL.setPosition(300);
+                wobbleArmR.setPosition(300);
             }
 
-            if (wobbleArm.atTargetPosition()) {
-                wobbleArm.stopMotor();
-            } else {
-                wobbleArm.set(movingBack ? 1 : 0.8);
-            }
 /*
             if(BButtonReaderdPadDown.isDown()){
                 wobbleArm.set(-0.5);
@@ -273,12 +272,13 @@ public class MainTeleOp extends LinearOpMode {
 
 
             if(gamepad1.right_trigger >= 0.15|| gamepad2.right_trigger >= 0.15){
-                kicker.setPosition(0.3); //270
-                Thread.sleep(150);
+                kicker.setPosition(0.6); //270
+                Thread.sleep(250);
                 kicker.setPosition(0.1);
             } else if (gamepad1.left_trigger >= 0.15 || gamepad2.left_trigger >= 0.15){
                 kicker.setPosition(-1);
             }
+
 
             if(AbuttonReaderX.getState() || BbuttonReaderX.getState()){
                 intake.set(1);
@@ -291,9 +291,9 @@ public class MainTeleOp extends LinearOpMode {
                 secondaryIntake.set(0);
             }
 
-            telemetry.addData("Angle: ", kicker.getAngle());
-            telemetry.addData("Wobble motor 1", wobbleArm.get());
-            telemetry.addData("Wobble motor 2", wobbleArm.getCurrentPosition());
+            //telemetry.addData("Angle: ", kicker.getAngle());
+            telemetry.addData("wobbleArmL pos", wobbleArmL.getPosition());
+            telemetry.addData("wobbleArmR pos", wobbleArmR.getPosition());
             telemetry.addData("Wobble fingies pos", wobbleFingers.getPosition());
             telemetry.update();
             //telemetry.addData("Stack Height", pipeline.getHeight());
