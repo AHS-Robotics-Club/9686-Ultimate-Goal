@@ -63,8 +63,8 @@ public class TimedAutonomous extends LinearOpMode {
         secondaryIntake = new Motor(hardwareMap, "secondaryIntake");
         kicker = new SimpleServo(hardwareMap, "kicker", 0, 270);
         wobbleFingers = new SimpleServo(hardwareMap, "wobbleFingers", 0, 270);
-        wobbleArmL = new SimpleServo(hardwareMap, "wobbleArmL", 0, 270);
-        wobbleArmR = new SimpleServo(hardwareMap, "wobbleArmR", 0, 270);
+        wobbleArmL = new SimpleServo(hardwareMap, "wobbleArmL", -100, 270);
+        wobbleArmR = new SimpleServo(hardwareMap, "wobbleArmR", -100, 270);
         time = new ElapsedTime();
         timez = new ElapsedTime();
 
@@ -184,7 +184,7 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj2_2);
 
                     traj2 = drive.trajectoryBuilder(traj2_2.end())
-                            .lineToLinearHeading(new Pose2d(-18.5, -32, Math.toRadians(0)))
+                            .lineToLinearHeading(new Pose2d(-18.5, -38, Math.toRadians(0)))
                             .build();
                     drive.followTrajectory(traj2);
                     frontLeft.set(1.0);
@@ -210,10 +210,10 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj3);
 
                 } else if(pp == 3){
-                    wobbleArmL.setPosition(0);
-                    wobbleArmR.setPosition(0);
+                    wobbleArmL.setPosition(0.27);
+                    wobbleArmR.setPosition(0.27);
                     Thread.sleep(750);
-                    wobbleFingers.setPosition(0.25);
+                    wobbleFingers.setPosition(0);
                 } else if(pp == 4){
                     Trajectory traj3_5 = drive.trajectoryBuilder(traj3.end())
                             .lineToLinearHeading(new Pose2d(-40, 1, 0))
@@ -221,15 +221,15 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj3_5);
 
                     traj4 = drive.trajectoryBuilder(traj3_5.end())
-                            .lineToLinearHeading(new Pose2d(-41.5, -17.7, Math.toRadians(-90)))
+                            .lineToLinearHeading(new Pose2d(-38.5, -18, Math.toRadians(-90)))
                             .build();
                     drive.followTrajectory(traj4);
 
                 } else if(pp == 5){
                     wobbleFingers.setPosition(0.71);
                     Thread.sleep(500);
-                    wobbleArmL.setPosition(300);
-                    wobbleArmR.setPosition(300);
+                    wobbleArmL.setPosition(0.9);
+                    wobbleArmR.setPosition(0.9);
                 } else if(pp == 6){
                     traj5 = drive.trajectoryBuilder(traj4.end())
                             .lineToLinearHeading(new Pose2d(26, -22, 0))
@@ -245,10 +245,10 @@ public class TimedAutonomous extends LinearOpMode {
  */
 
                 } else if(pp == 7){
-                    wobbleArmL.setPosition(0);
-                    wobbleArmR.setPosition(0);
+                    wobbleArmL.setPosition(0.27);
+                    wobbleArmR.setPosition(0.27);
                     Thread.sleep(750);
-                    wobbleFingers.setPosition(0.25);
+                    wobbleFingers.setPosition(0);
 
                 } else if(pp == 8){
                     Trajectory endTraj = drive.trajectoryBuilder(traj5.end())
@@ -311,9 +311,10 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj3);
 
                 } else if(pp == 3){
-                    wobbleArmL.setPosition(0);
-                    wobbleArmR.setPosition(0);
-                    wobbleFingers.setPosition(0.25);
+                    wobbleArmL.setPosition(0.27);
+                    wobbleArmR.setPosition(0.27);
+                    Thread.sleep(200);
+                    wobbleFingers.setPosition(0);
                 } else if(pp == 4){
                     Trajectory traj3_5 = drive.trajectoryBuilder(traj3.end())
                             .lineToLinearHeading(new Pose2d(-40, 1, 0))
@@ -328,8 +329,8 @@ public class TimedAutonomous extends LinearOpMode {
                 } else if(pp == 5){
                     wobbleFingers.setPosition(0.71);
                     Thread.sleep(500);
-                    wobbleArmL.setPosition(300);
-                    wobbleArmR.setPosition(300);
+                    wobbleArmL.setPosition(0.9);
+                    wobbleArmR.setPosition(0.9);
                 } else if(pp == 6){
                     Trajectory trajtemp = drive.trajectoryBuilder(traj4.end())
                             .lineToLinearHeading(new Pose2d(46, -20))
@@ -351,10 +352,10 @@ public class TimedAutonomous extends LinearOpMode {
  */
 
                 } else if(pp == 7){
-                    wobbleFingers.setPosition(0.25);
+                    wobbleArmL.setPosition(0.27);
+                    wobbleArmR.setPosition(0.27);
                     Thread.sleep(750);
-                    wobbleArmL.setPosition(0);
-                    wobbleArmR.setPosition(0);
+                    wobbleFingers.setPosition(0);
                 } else if(pp == 8){
                     Trajectory endTraj = drive.trajectoryBuilder(traj5.end())
                             .lineToLinearHeading(new Pose2d(4, 0, 0))
@@ -388,7 +389,6 @@ public class TimedAutonomous extends LinearOpMode {
                             .build();
                     drive.followTrajectory(traj2);
 
-
                     frontLeft.set(1.0);
                     frontRight.set(1.0);
                     backLeft.set(1.0);
@@ -413,10 +413,10 @@ public class TimedAutonomous extends LinearOpMode {
                             .build();
                     drive.followTrajectory(traj3);
                 } else if(pp == 3){
-                    wobbleArmL.setPosition(0);
-                    wobbleArmR.setPosition(0);
+                    wobbleArmL.setPosition(0.27);
+                    wobbleArmR.setPosition(0.27);
                     Thread.sleep(300);
-                    wobbleFingers.setPosition(0.25);
+                    wobbleFingers.setPosition(0);
                 } else if(pp == 4){
                     Trajectory traj4_1 = drive.trajectoryBuilder(traj3.end())
                             .strafeLeft(10)
@@ -424,24 +424,24 @@ public class TimedAutonomous extends LinearOpMode {
                     drive.followTrajectory(traj4_1);
 
                     traj4 = drive.trajectoryBuilder(traj4_1.end())
-                            .lineToLinearHeading(new Pose2d(-41, -22.1, Math.toRadians(-90)))
+                            .lineToLinearHeading(new Pose2d(-39.5, -22, Math.toRadians(-90)))
                             .build();
                     drive.followTrajectory(traj4);
                 } else if(pp == 5){
                     wobbleFingers.setPosition(0.71);
                     Thread.sleep(500);
-                    wobbleArmL.setPosition(300);
-                    wobbleArmR.setPosition(300);
+                    wobbleArmL.setPosition(0.9);
+                    wobbleArmR.setPosition(0.9);
                 } else if(pp == 6){
                     traj5 = drive.trajectoryBuilder(traj4.end())
                             .lineToLinearHeading(new Pose2d(4, -40, 0))
                             .build();
                     drive.followTrajectory(traj5);
                 } else if(pp == 7){
-                    wobbleArmL.setPosition(0);
-                    wobbleArmR.setPosition(0);
+                    wobbleArmL.setPosition(0.27);
+                    wobbleArmR.setPosition(0.27);
                     Thread.sleep(750);
-                    wobbleFingers.setPosition(0.25);
+                    wobbleFingers.setPosition(0);
                     Thread.sleep(300);
                 } else if(pp == 8){
                     Trajectory traj6 = drive.trajectoryBuilder(traj4.end())

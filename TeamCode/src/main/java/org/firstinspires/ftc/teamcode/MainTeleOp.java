@@ -84,8 +84,8 @@ public class MainTeleOp extends LinearOpMode {
 
         kicker = new SimpleServo(hardwareMap, "kicker", 0, 270);
         wobbleFingers = new SimpleServo(hardwareMap, "wobbleFingers", 0, 270);
-        wobbleArmL = new SimpleServo(hardwareMap, "wobbleArmL", 0, 270);
-        wobbleArmR = new SimpleServo(hardwareMap, "wobbleArmR", 0, 270);
+        wobbleArmL = new SimpleServo(hardwareMap, "wobbleArmL", -100, 270);
+        wobbleArmR = new SimpleServo(hardwareMap, "wobbleArmR", -100, 270);
 
         driveTrain = new MecanumDrive(frontLeft, frontRight, backLeft, backRight);
 //        imu = new RevIMU(hardwareMap);
@@ -139,7 +139,6 @@ public class MainTeleOp extends LinearOpMode {
 
         shooterF.resetEncoder();
         shooterB.resetEncoder();
-
 
 
         shooterF.setRunMode(Motor.RunMode.VelocityControl);
@@ -250,15 +249,15 @@ public class MainTeleOp extends LinearOpMode {
             if(AbuttonReaderdPadUp.getState() || BbuttonReaderdPadUp.getState()){
                 wobbleFingers.setPosition(0.71);
             } else {
-                wobbleFingers.setPosition(0.25);
+                wobbleFingers.setPosition(0);
             }
 
             if(AButtonReaderdPadRight.wasJustPressed()){
-                wobbleArmL.setPosition(0);
-                wobbleArmR.setPosition(0);
+                wobbleArmL.setPosition(0.27);
+                wobbleArmR.setPosition(0.27);
             } else if (AButtonReaderdPadLeft.wasJustPressed()){
-                wobbleArmL.setPosition(300);
-                wobbleArmR.setPosition(300);
+                wobbleArmL.setPosition(0.9);
+                wobbleArmR.setPosition(0.9);
             }
 
 /*
